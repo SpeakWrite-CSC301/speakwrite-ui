@@ -52,23 +52,25 @@ export default function TextBlock({ onClose, setFileTitle, currentFileID, trigge
       const existingSessions = await fetchSessions(token);
 
       if (existingSessions && existingSessions.length === 0) {
-      const session = await createSession({
-        session_name: "New file",
-        context: {}
-      }, token);
+        const session = await createSession({
+          session_name: "Untitled", // default chat name is Untitled
+          context: { message: "" }
+        }, token);
 
-      if (session && session.session_id) {
-        setCsid(session.session_id);
-        console.log(session);
+        if (session && session.session_id) {
+          setCsid(session.session_id);
+          setTitle(session.session_name);
+          console.log(session);
+        }
+        setTriggerAfterUpdate((update) => (!update));
       }
-      setTriggerAfterUpdate((update) => (!update));
+      else {
+        setCsid(existingSessions[0].session_id);
+        setTitle(existingSessions[0].session_name);
+      }
     }
-    else {
-      setCsid(existingSessions[0].session_id);
-    }
-  }
 
-    if  (currentFileID == -1 && token) { // currentFileID is assigned -1 (an invalid session ID) if there are no sessions being returned on the fetch
+    if (currentFileID == -1 && token) {
       intializeSess();
     } else {
       setCsid(currentFileID);
@@ -82,6 +84,21 @@ export default function TextBlock({ onClose, setFileTitle, currentFileID, trigge
       contentRef.current.style.height = `${contentRef.current.scrollHeight}px`;
     }
   }, [content]);
+
+  // Add effect to update document title when content changes
+  useEffect(() => {
+    try {
+      if (content && content.trim() !== "") {
+        document.title = title || "Untitled";
+      } else {
+        document.title = "SpeakWrite";
+      }
+    } catch (error) {
+      // fallback to tab name "SpeakWrite" (default tab name upon loading the page)
+      console.error("Error updating document title:", error);
+      document.title = "SpeakWrite";
+    }
+  }, [content, title]);
 
   useEffect(() => {
     async function fetchSpecificSession(session_id) {
@@ -225,8 +242,18 @@ export default function TextBlock({ onClose, setFileTitle, currentFileID, trigge
 
   const titleSubmit = async (e) => {
     e.preventDefault(); //prevent page reload
-    await renameSession(currentFileID, title.length == 0 ? "Unnamed file" : title, token);
-    setTriggerAfterUpdate((update) => !update);
+    try {
+      // when edited, fallback to "Untitled"
+      const newTitle = title.trim() || "Untitled";
+      await renameSession(currentFileID, newTitle, token);
+      setTitle(newTitle);
+      setFileTitle(newTitle);
+      setTriggerAfterUpdate((update) => !update);
+    } catch (error) {
+      console.error("Error renaming session:", error);
+      setTitle("Untitled");
+      setFileTitle("Untitled");
+    }
   };
 
   return (
@@ -241,7 +268,7 @@ export default function TextBlock({ onClose, setFileTitle, currentFileID, trigge
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="New file"
+          placeholder="Untitled"
           className="w-full text-4xl font-bold text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300 mb-4 outline-none bg-transparent flex-none"
         />
       </Form>

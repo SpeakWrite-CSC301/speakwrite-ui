@@ -98,6 +98,21 @@ export default function HomePage() {
     setLogoutHandler(handleLogout);
   }, []);
 
+  // Add new useEffect for managing document title
+  useEffect(() => {
+    // Set initial title
+    document.title = "SpeakWrite";
+  }, []);
+
+  // Add effect to update title when file title changes
+  useEffect(() => {
+    if (fileTitle && fileTitle !== "Session 1") {
+      document.title = fileTitle;
+    } else {
+      document.title = "SpeakWrite";
+    }
+  }, [fileTitle]);
+
   return (
     <div className="relative w-full min-h-screen bg-background dark:bg-gray-900 text-black dark:text-white flex justify-center">
       {/* Top Right Authentication Buttons */}
