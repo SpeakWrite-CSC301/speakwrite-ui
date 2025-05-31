@@ -283,7 +283,9 @@ export default function TextBlock({ onClose, setFileTitle, currentFileID, trigge
             createChat(c_sid, "speakwrite", e.target.value, token);
           }
         }}
-        placeholder="Start writing your notes here..."
+        placeholder="START
+Say 'hi my name is ...' and then 'change that to ...'
+END"
         className="w-full text-xl py-2 px-5 outline-none resize-none bg-transparent text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-300 leading-relaxed flex-grow basis-0"
         rows={5}
       />
